@@ -15,10 +15,14 @@ import {
 
 import './scss/app.scss';
 
+export const SearchContext = React.createContext(null);
+
 function App() {
+  const [searchValue, setSearchValue] = React.useState('');
+
   const router = createBrowserRouter(
     createRoutesFromElements(
-      <Route path="/" element={<Root />}>
+      <Route path="/" element={<Root searchValue={searchValue} setSearchValue={setSearchValue} />}>
         <Route index element={<Home />} />
         <Route path="cart" element={<Cart />} />
         <Route path="*" element={<NotFound />} />
@@ -29,16 +33,16 @@ function App() {
   return <RouterProvider router={router} />;
 }
 
-const Root = () => {
+const Root = ({ searchValue, setSearchValue }) => {
   return (
-    <>
-      <div className="wrapper">
+    <div className="wrapper">
+      <SearchContext.Provider value={{ searchValue, setSearchValue }}>
         <Header />
         <div className="content">
           <Outlet />
         </div>
-      </div>
-    </>
+      </SearchContext.Provider>
+    </div>
   );
 };
 
