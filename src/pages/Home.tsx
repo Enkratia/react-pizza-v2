@@ -1,12 +1,15 @@
 import React from 'react';
-
+import { Link, useNavigate } from 'react-router-dom';
 import qs from 'qs';
-import { useNavigate } from 'react-router-dom';
-import { SearchContext } from '../App';
 
 import { useSelector, useDispatch } from 'react-redux';
-import { setCategoryId, setCurrentPage, setFilters } from '../redux/slices/filterSlice';
-import { fetchPizzas } from '../redux/slices/pizzaSlice';
+import { fetchPizzas, selectPizzaData } from '../redux/slices/pizzaSlice';
+import {
+  selectFilter,
+  setCategoryId,
+  setCurrentPage,
+  setFilters,
+} from '../redux/slices/filterSlice';
 
 import Categories from '../components/Categories';
 import Sort, { sortList } from '../components/Sort';
@@ -14,23 +17,21 @@ import PizzaBlock from '../components/PizzaBlock';
 import Skeleton from '../components/PizzaBlock/Skeleton';
 import Pagination from '../components/Pagination';
 
-const Home = () => {
+const Home: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isSearch = React.useRef(false);
   const isMounted = React.useRef(false);
 
-  const { categoryId, sort, currentPage } = useSelector((state) => state.filter);
-  const { items, status } = useSelector((state) => state.pizza);
+  const { categoryId, sort, currentPage, searchValue } = useSelector(selectFilter);
+  const { items, status } = useSelector(selectPizzaData);
 
-  const { searchValue } = React.useContext(SearchContext);
-
-  const onChangeCategory = (id) => {
-    dispatch(setCategoryId(id));
+  const onChangeCategory = (idx: number) => {
+    dispatch(setCategoryId(idx));
   };
 
-  const onChangePage = (number) => {
-    dispatch(setCurrentPage(number));
+  const onChangePage = (page: number) => {
+    dispatch(setCurrentPage(page));
   };
 
   const getPizzas = async () => {
@@ -40,6 +41,7 @@ const Home = () => {
     const search = searchValue ? `&search=${searchValue}` : '';
 
     dispatch(
+      // @ts-ignore
       fetchPizzas({
         currentPage,
         category,
@@ -90,7 +92,11 @@ const Home = () => {
     isSearch.current = false;
   }, [categoryId, sort.sortProperty, searchValue, currentPage]);
 
-  const pizzas = items.map((obj) => <PizzaBlock key={obj.id} {...obj} />);
+  const pizzas = items.map((obj: any) => (
+    <Link key={obj.id} to={`pizza/${obj.id}`}>
+      <PizzaBlock {...obj} />
+    </Link>
+  ));
   const skeletons = [...Array(6)].map((_, index) => <Skeleton key={index} />);
 
   return (
